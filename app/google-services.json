@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "568860312568",
+    "firebase_url": "https://gaming-groups.firebaseio.com",
+    "project_id": "gaming-groups",
+    "storage_bucket": "gaming-groups.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:568860312568:android:2e2e033e11913c1d",
+        "android_client_info": {
+          "package_name": "de.js_labs.gaminggroups"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "568860312568-occs1p5igu3cp4vrj3u1ksvi488aiu82.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.js_labs.gaminggroups",
+            "certificate_hash": "202d120aa495f4f508351045d91276a0c9fd3604"
+          }
+        },
+        {
+          "client_id": "568860312568-dmmq5vp52682c99sqsq1kmub5apo6l66.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMGgcr3RwqzLa9adZCDrwAjk2f18ZVlOs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "568860312568-dmmq5vp52682c99sqsq1kmub5apo6l66.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
