@@ -1,10 +1,13 @@
 package de.js_labs.gaminggroups;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,10 +26,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.ErrorCodes;
+import com.firebase.ui.auth.IdpResponse;
+import com.firebase.ui.auth.ResultCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.crash.FirebaseCrash;
 
 import java.util.Arrays;
 
@@ -34,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int RC_SIGN_IN = 707;
 
     private FirebaseAnalytics firebaseAnalytics;
+    private FirebaseCrash firebaseCrash;
     private FirebaseAuth firebaseAuth;
 
     private Toolbar toolbar;
@@ -62,32 +70,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void setupFirebase() {
         firebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        firebaseAnalytics.setAnalyticsCollectionEnabled(true);
         firebaseAuth = FirebaseAuth.getInstance();
     }
 
     private void checkUser() {
         if (firebaseAuth.getCurrentUser() != null) {
-            AuthUI.SignInIntentBuilder intentBuilder = AuthUI.getInstance().createSignInIntentBuilder();
-            intentBuilder.setAvailableProviders(
-                    Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                            new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build(),
-                            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                            new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build()));
-            intentBuilder.setPrivacyPolicyUrl("https://js-labs.jimdo.com/privacy-policy/");
-            intentBuilder.setTheme(R.style.AppTheme);
-            intentBuilder.setLogo(R.drawable.auth_logo);
-            startActivityForResult(intentBuilder.build(), RC_SIGN_IN);
+
         } else {
-            AuthUI.SignInIntentBuilder intentBuilder = AuthUI.getInstance().createSignInIntentBuilder();
-            intentBuilder.setAvailableProviders(
-                    Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                            new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build(),
-                            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                            new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build()));
-            intentBuilder.setPrivacyPolicyUrl("https://js-labs.jimdo.com/privacy-policy/");
-            intentBuilder.setTheme(R.style.AppTheme);
-            intentBuilder.setLogo(R.drawable.auth_logo);
-            startActivityForResult(intentBuilder.build(), RC_SIGN_IN);
+            startSignInActivity();
         }
     }
 
@@ -132,11 +123,69 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Adding new Group...", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                showSnackbar("Adding new Group...");
             }
         });
 
+    }
+
+    private void startSignInActivity(){
+        AuthUI.SignInIntentBuilder intentBuilder = AuthUI.getInstance().createSignInIntentBuilder();
+        intentBuilder.setAvailableProviders(
+                Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                        new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build(),
+                        new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
+                        new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build()));
+        intentBuilder.setPrivacyPolicyUrl("https://js-labs.jimdo.com/privacy-policy/");
+        intentBuilder.setTheme(R.style.AppTheme);
+        intentBuilder.setLogo(R.drawable.auth_logo);
+        startActivityForResult(intentBuilder.build(), RC_SIGN_IN);
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+
+            if (resultCode == ResultCodes.OK) {
+                return;
+            } else {
+                // Sign in failed
+                if (response == null) {
+                    showAlertDialog(getStringByResId(R.string.dialog_sign_in_required), getStringByResId(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            startSignInActivity();
+                        }
+                    });
+                    return;
+                }
+
+                if (response.getErrorCode() == ErrorCodes.NO_NETWORK) {
+                    showAlertDialog(getStringByResId(R.string.dialog_connection_required), getStringByResId(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            finish();
+                        }
+                    });
+                    return;
+                }
+
+                showAlertDialog(getStringByResId(R.string.dialog_unknown_error), getStringByResId(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkUser();
     }
 
     @Override
@@ -174,26 +223,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             appBarMain.addView(contentDonate);
             fab.hide();
         } else if (id == R.id.nav_settings) {
-            AuthUI.getInstance()
-                    .signOut(this)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        public void onComplete(@NonNull Task<Void> task) {
-                            // user is now signed out
-                            AuthUI.SignInIntentBuilder intentBuilder = AuthUI.getInstance().createSignInIntentBuilder();
-                            intentBuilder.setAvailableProviders(
-                                    Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                                            new AuthUI.IdpConfig.Builder(AuthUI.PHONE_VERIFICATION_PROVIDER).build(),
-                                            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build(),
-                                            new AuthUI.IdpConfig.Builder(AuthUI.TWITTER_PROVIDER).build()));
-                            intentBuilder.setPrivacyPolicyUrl("https://js-labs.jimdo.com/privacy-policy/");
-                            intentBuilder.setTheme(R.style.AppTheme);
-                            intentBuilder.setLogo(R.drawable.auth_logo);
-                            startActivityForResult(intentBuilder.build(), RC_SIGN_IN);
-                        }
-                    });
 
         } else if (id == R.id.nav_account) {
-
+            Intent intent = new Intent(this, AccountActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_share) {
 
         }
@@ -202,6 +235,31 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    ///////////////////////////////////////////////////////////
+    ///////////              TOOLS                 ////////////
+    ///////////////////////////////////////////////////////////
+
+    private String getStringByResId(int ResId){
+        return getResources().getString(ResId);
+    }
+
+    private void showSnackbar(String message){
+        Snackbar.make(fab, message, Snackbar.LENGTH_SHORT)
+                .setAction("Action", null).show();
+    }
+
+    private void showAlertDialog(String message, String postivBtn, DialogInterface.OnClickListener onClickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(message)
+                .setPositiveButton(postivBtn, onClickListener)
+                .setCancelable(false);
+        builder.create().show();
+    }
+
+    ///////////////////////////////////////////////////////////
+    ///////////        ADAPTER / CLASSES           ////////////
+    ///////////////////////////////////////////////////////////
 
     public class GroupsAdapter extends ArrayAdapter<Group> {
         private final Context context;
@@ -215,7 +273,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Log.d("js.labs", "postion: " +position );
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View listItemView = inflater.inflate(R.layout.listview_item_mygroups, parent, false);
             TextView textViewName = (TextView) listItemView.findViewById(R.id.textViewName);
