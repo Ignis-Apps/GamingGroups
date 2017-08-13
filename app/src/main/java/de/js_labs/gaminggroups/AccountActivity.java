@@ -6,7 +6,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -19,11 +18,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthProvider;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.crash.FirebaseCrash;
-
-import java.util.Arrays;
 
 public class AccountActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -33,8 +29,8 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
     private Button signOutBtn;
     private Button resetPasswordBtn;
     private Button deleteAccountBtn;
-    private ImageView AccountTypeBg;
-    private ImageView AccountType;
+    private ImageView accountTypeBg;
+    private ImageView accountType;
     private TextView email;
 
     @Override
@@ -60,8 +56,8 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         resetPasswordBtn.setOnClickListener(this);
         deleteAccountBtn.setOnClickListener(this);
 
-        AccountTypeBg = (ImageView) findViewById(R.id.imageViewAccountTypeBg);
-        AccountType = (ImageView) findViewById(R.id.imageViewAccountType);
+        accountTypeBg = (ImageView) findViewById(R.id.imageViewAccountTypeBg);
+        accountType = (ImageView) findViewById(R.id.imageViewAccountType);
 
         email = (TextView) findViewById(R.id.textViewEmail);
 
@@ -70,25 +66,25 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
                 email.setText(currentUser.getEmail());
                 break;
             case "phone":
-                resetPasswordBtn.setEnabled(false);
-                AccountTypeBg.setImageResource(R.drawable.fui_idp_button_background_phone);
-                AccountType.setImageResource(R.drawable.fui_ic_settings_phone_white_24dp);
+                resetPasswordBtn.setVisibility(View.INVISIBLE);
+                accountTypeBg.setImageResource(R.drawable.fui_idp_button_background_phone);
+                accountType.setImageResource(R.drawable.fui_ic_settings_phone_white_24dp);
                 email.setText(currentUser.getPhoneNumber());
                 break;
             case "google.com":
-                resetPasswordBtn.setEnabled(false);
-                AccountTypeBg.setImageResource(R.drawable.fui_idp_button_background_google);
-                AccountType.setImageResource(R.drawable.fui_ic_googleg_color_24dp);
+                resetPasswordBtn.setVisibility(View.INVISIBLE);
+                accountTypeBg.setImageResource(R.drawable.fui_idp_button_background_google);
+                accountType.setImageResource(R.drawable.fui_ic_googleg_color_24dp);
                 email.setText(currentUser.getEmail());
                 break;
             case "twitter.com":
-                resetPasswordBtn.setEnabled(false);
-                AccountTypeBg.setImageResource(R.drawable.fui_idp_button_background_twitter);
-                AccountType.setImageResource(R.drawable.fui_ic_twitter_bird_white_24dp);
+                resetPasswordBtn.setVisibility(View.INVISIBLE);
+                accountTypeBg.setImageResource(R.drawable.fui_idp_button_background_twitter);
+                accountType.setImageResource(R.drawable.fui_ic_twitter_bird_white_24dp);
                 email.setText(currentUser.getDisplayName());
                 break;
             default:
-                resetPasswordBtn.setEnabled(false);
+                resetPasswordBtn.setVisibility(View.INVISIBLE);
                 FirebaseCrash.report(new Exception("Strange Provider: " + currentUser.getProviderData().get(1).getProviderId()));
                 break;
         }

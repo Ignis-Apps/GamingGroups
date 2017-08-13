@@ -26,12 +26,12 @@
     <string name="dialog_unknown_error">An unknown error occurred! Please restart the app.</string>
     <string name="dialog_ok" translatable="false">Ok</string>
 
-    <string name="account_Sign_out" >Sign out</string>
-    <string name="account_reset_password" >Reset Password</string>
-    <string name="account_delete_account" >Delete Account</string>
-    <string name="account_delete_account_confirm" >This can not be undone! Are you sure?</string>
-    <string name="account_delete_account_confirm_yes" >Yes</string>
-    <string name="account_delete_account_confirm_no" >No</string>
+    <string name="account_Sign_out">Sign out</string>
+    <string name="account_reset_password">Reset Password</string>
+    <string name="account_delete_account">Delete Account</string>
+    <string name="account_delete_account_confirm">This can not be undone! Are you sure?</string>
+    <string name="account_delete_account_confirm_yes">Yes</string>
+    <string name="account_delete_account_confirm_no">No</string>
 
     <!-- Common -->
     <string name="fui_default_toolbar_title" translatable="false">@string/app_name</string>
